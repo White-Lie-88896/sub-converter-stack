@@ -1,0 +1,38 @@
+﻿version: '3.8'
+
+services:
+  sub-web:
+    image: local/sub-web-modify:latest
+    container_name: sub-web-modify
+    restart: unless-stopped
+    ports:
+      - "8090:80"
+
+  sub-api:
+    image: aethersailor/subconverter-extended:latest
+    container_name: subconverter-extended
+    restart: unless-stopped
+    ports:
+      - "25500:25500"
+
+  myurls:
+    image: stilleshan/myurls:latest
+    container_name: myurls
+    restart: unless-stopped
+    ports:
+      - "8002:8080"
+    environment:
+      - MYURLS_DOMAIN=sub.your.domain.xyz
+      - MYURLS_PROTO=https
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:alpine
+    container_name: myurls-redis
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+
+volumes:
+  redis-data:

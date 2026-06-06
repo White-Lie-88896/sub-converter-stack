@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4F46E5" />
+      <stop offset="100%" stop-color="#06B6D4" />
+    </linearGradient>
+  </defs>
+  <!-- Sleek premium transfer/exchange logo -->
+  <circle cx="30" cy="50" r="14" fill="url(#grad)" />
+  <circle cx="70" cy="50" r="14" fill="url(#grad)" />
+  <path d="M 42 44 L 58 44 M 58 56 L 42 56" stroke="url(#grad)" stroke-width="7" stroke-linecap="round" />
+  <path d="M 52 37 L 59 44 L 52 51" fill="none" stroke="url(#grad)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M 48 63 L 41 56 L 48 49" fill="none" stroke="url(#grad)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
+</svg>

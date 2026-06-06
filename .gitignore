@@ -1,0 +1,37 @@
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Build outputs
+dist/
+tmp/
+out/
+build/
+.cache/
+
+# IDE / Editor files
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environmental variables (NEVER commit real secrets!)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Renamed nested git directories (to avoid submodule detection)
+**/.git_bak/
+
+# Nested git repos (just in case they're still present)
+sub-services-backup/sub-web-modify/.git/
+subweb/.git/
