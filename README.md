@@ -1,42 +1,166 @@
-# 🌐 cool-bose: 自建订阅转换与短链接服务集成包
+# sub-converter-stack
 
-本项目是为个人定制的订阅转换（Subscription Converter）与短链服务（Shortener）一键部署方案，包含完整的 Docker Compose 部署配置、自动化脚本、自定义反向代理配置以及深度优化后的去广告 Vue 前端代码。
-
----
-
-## 🛠️ 项目结构与组件来源
-
-整个工作区包含以下核心组件：
-
-### 1. 🎨 订阅转换前端网页 (`sub-services-backup/sub-web-modify`)
-* **原项目来源**：
-  * 最早基于 CareyWang 的 [sub-web](https://github.com/CareyWang/sub-web)
-  * 后期重构基于 肥羊 (youshandefeiyang) 的 [sub-web-modify](https://github.com/youshandefeiyang/sub-web-modify)
-* **本次个人定制修改内容**：
-  * **界面极简化**：精简了页面结构，保留核心订阅转换功能，移除与个人使用场景无关的导航入口，整体布局更加聚焦简洁。
-  * **视觉系统优化**：强制设置页面为极简纯白背景，更新浏览器 Tab 的 favicon 图标为现代渐变矢量 `favicon.svg`。
-  * **按钮可读性修复**：修复了在浅色/深色主题下因为全局样式强制覆盖导致的辅助按钮与复制按钮看不清、颜色填充不完全的问题。
-  * **智能路由逻辑**：支持根据访问源自动切换后端。局域网访问默认使用本地局域网后端，公网访问时默认使用公网自建后端。
-  * **短链接口本地代理**：优化短链接 API 的网络路由，配置反代规避了浏览器的跨域 CORS 错误。
-  * **独立短链功能**：在前端额外引入了独立的「普通短链」生成标签页，允许在同一个界面中直接缩短任意长网址链接。
-
-### 2. 🔌 订阅转换后端 (`subconverter-extended`)
-* **镜像来源**：使用 aethersailor 的 [subconverter-extended](https://github.com/aethersailor/subconverter-extended) 增强版后端。
-* **特性**：内置支持 Vless Reality, Encryption, Hysteria2, AnyTLS, TUIC, Mieru 等增强型节点的订阅转换。
-
-### 3. 🔗 短网址重定向服务 (`myurls`)
-* **镜像来源**：使用 stilleshan 的 [myurls](https://github.com/stilleshan/myurls) 自建短链接服务。
-* **数据库**：配合轻量级 `redis:alpine` 容器存储短链映射键值。
+自建订阅转换与短链接服务一键部署方案。基于开源项目二次定制，去除与个人使用无关的内容，专注于核心功能。
 
 ---
 
-## 🚀 部署与使用指南
+## 项目组成
 
-项目的所有配置文件都经过适配，可以直接运行在您的公网 VPS `DC1` 上：
+| 组件 | 镜像 / 来源 | 说明 |
+|---|---|---|
+| 前端网页 | 本仓库自行构建 | 基于 [youshandefeiyang/sub-web-modify](https://github.com/youshandefeiyang/sub-web-modify) 定制 |
+| 订阅转换后端 | `aethersailor/subconverter-extended` | 支持 Vless/Hysteria2/TUIC 等协议，[项目地址](https://github.com/aethersailor/subconverter-extended) |
+| 短链接服务 | `stilleshan/myurls` | 自建短网址生成与重定向，[项目地址](https://github.com/stilleshan/myurls) |
+| 短链缓存数据库 | `redis:alpine` | 存储短链映射 |
 
-1. **部署目录**：`/opt/sub-services`
-2. **启动命令**：
-   ```bash
-   docker compose -f docker-compose.yml up -d --build
-   ```
-3. **接口配置**：通过 Nginx Proxy Manager 反向代理前端网页及 `/sub` (转换接口) 与 `/short` (短链接口)，并开启 `https://sub.your.domain.xyz` 加密访问。
+---
+
+## 定制说明
+
+基于原版做了以下个人化改动：
+
+- **界面极简化**：精简页面结构，保留核心功能，去除与个人使用无关的导航入口
+- **视觉优化**：纯白背景，自定义渐变 SVG favicon，按钮样式深色/浅色主题适配修复
+- **智能路由**：局域网访问时自动使用本地后端，公网访问时切换为公网后端
+- **短链集成**：新增「普通短链」标签页，可在前端直接为任意链接生成短网址
+- **跨域代理**：通过前端 Nginx 反代 `/short` 接口，规避浏览器 CORS 限制
+
+---
+
+## 部署方法
+
+### 前置条件
+
+- 一台装有 Docker 和 Docker Compose 的服务器（Linux 推荐）
+- 一个指向该服务器的域名，并已申请 SSL 证书（推荐使用 [Nginx Proxy Manager](https://nginxproxymanager.com/)）
+
+### 第一步：克隆仓库
+
+```bash
+git clone https://github.com/White-Lie-88896/sub-converter-stack.git
+cd sub-converter-stack/sub-services-backup
+```
+
+### 第二步：配置环境变量
+
+```bash
+cd sub-web-modify
+cp .env.example .env
+nano .env   # 将三处 your.domain.xyz 替换为您自己的域名
+```
+
+`.env` 中需要修改的三项：
+
+```env
+VUE_APP_SUBCONVERTER_DEFAULT_BACKEND = "https://sub.你的域名"
+VUE_APP_MYURLS_DEFAULT_BACKEND       = "https://sub.你的域名"
+VUE_APP_CONFIG_UPLOAD_BACKEND        = "https://sub.你的域名"
+```
+
+同时修改 `docker-compose.yml` 中的短链域名：
+
+```yaml
+environment:
+  - MYURLS_DOMAIN=sub.你的域名   # ← 改这里
+  - MYURLS_PROTO=https
+```
+
+### 第三步：构建前端镜像
+
+```bash
+# 在 sub-services-backup/sub-web-modify 目录下执行
+docker build -t local/sub-web-modify:latest .
+```
+
+> 首次构建需要下载 Node.js 依赖，约需 1~3 分钟。
+
+### 第四步：启动所有服务
+
+```bash
+# 回到 sub-services-backup 目录
+cd ..
+docker compose up -d
+```
+
+验证所有容器已启动：
+
+```bash
+docker ps
+```
+
+应看到以下四个容器均处于 `Up` 状态：
+
+| 容器名 | 端口 | 作用 |
+|---|---|---|
+| `sub-web-modify` | `8090:80` | 前端网页 |
+| `subconverter-extended` | `25500:25500` | 订阅转换 API |
+| `myurls` | `8002:8080` | 短链接服务 |
+| `myurls-redis` | 无公开 | 短链缓存数据库 |
+
+### 第五步：配置反向代理
+
+使用 Nginx Proxy Manager（或其他反代工具），将您的域名代理至前端容器，并在**高级配置（Advanced）**中添加以下 location 规则，确保 API 路由优先级正确：
+
+```nginx
+# 订阅转换 API（^~ 确保优先于短链正则）
+location ^~ /sub {
+    proxy_pass http://127.0.0.1:25500/sub;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+
+location ^~ /version {
+    proxy_pass http://127.0.0.1:25500/version;
+    proxy_set_header Host $host;
+}
+
+# 短链生成 API
+location ^~ /short {
+    proxy_pass http://127.0.0.1:8090/short;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+
+# 短链跳转（匹配 3-10 位字母数字）
+location ~ "^/[a-zA-Z0-9]{3,10}$" {
+    proxy_pass http://127.0.0.1:8002;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+```
+
+> **注意**：`^~` 修饰符必须加，否则短链正则会抢匹配 `/sub`、`/version` 等路径，导致 API 404。
+
+### 第六步：验证
+
+```bash
+# 后端版本
+curl https://sub.你的域名/version
+
+# 生成一条短链（测试）
+curl -X POST https://sub.你的域名/short \
+  -d "longUrl=$(echo -n 'https://google.com' | base64)"
+```
+
+---
+
+## 后续更新前端
+
+修改了 `sub-web-modify/src/views/Subconverter.vue` 后，重新构建并重启即可：
+
+```bash
+docker build -t local/sub-web-modify:latest ./sub-web-modify
+docker compose restart sub-web
+```
+
+---
+
+## 许可证
+
+本项目为个人使用目的的二次定制，遵循各上游项目的开源协议，请勿用于商业用途。
