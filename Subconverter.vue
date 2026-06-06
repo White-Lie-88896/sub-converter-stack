@@ -496,11 +496,11 @@ export default {
         },
         customBackend: {
           "自建公网后端": "https://sub.your.domain.xyz",
-          "自建局域网后端": "http://192.168.11.7:25500",
+          "自建局域网后端": "http://192.168.1.100:25500",
         },
         backendOptions: [
           {value: "https://sub.your.domain.xyz"},
-          {value: "http://192.168.11.7:25500"},
+          {value: "http://192.168.1.100:25500"},
         ],
         remoteConfig: [
           {
@@ -911,8 +911,8 @@ export default {
         clientType: "",
         customBackend: this.getUrlParam() !== ""
           ? this.getUrlParam()
-          : (window.location.hostname === "192.168.11.7" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.hostname.startsWith("192.168."))
-            ? "http://192.168.11.7:25500"
+          : (window.location.hostname === "192.168.1.100" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.hostname.startsWith("192.168."))
+            ? "http://192.168.1.100:25500"
             : "https://sub.your.domain.xyz",
         shortType: "/short",
         remoteConfig: "https://raw.githubusercontent.com/White-Lie-88896/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_Online.ini",
